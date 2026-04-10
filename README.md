@@ -36,7 +36,8 @@ deepfake-detector/
 ├── scripts/
 │   ├── prepare_data.py
 │   ├── train.py
-│   └── infer.py
+│   ├── infer.py
+│   └── train_image_tf.py
 ├── src/deepfake_detector/
 │   ├── api/
 │   │   └── app.py
@@ -95,3 +96,43 @@ deepfake-detector/
 - Add evaluation scripts (AUC, F1, precision/recall).
 - Add experiment tracking (Weights & Biases / MLflow).
 - Harden API for production usage (auth, queueing, model warm-loading, monitoring).
+
+## TensorFlow Image Classifier (REAL vs FAKE)
+
+A complete TensorFlow/Keras training script is available at:
+
+`scripts/train_image_tf.py`
+
+Dataset layout expected by the script:
+
+```text
+dataset/
+   train/
+      real/
+      fake/
+   validation/
+      real/
+      fake/
+```
+
+Default dataset path points to:
+
+`~/Downloads/archive/dataset`
+
+Train + fine-tune + evaluate + save model:
+
+```bash
+python scripts/train_image_tf.py --mode train
+```
+
+Use a custom dataset path in Downloads archive folder:
+
+```bash
+python scripts/train_image_tf.py --mode train --dataset-dir ~/Downloads/archive/dataset
+```
+
+Run single-image inference using a saved model:
+
+```bash
+python scripts/train_image_tf.py --mode infer --image-path path/to/image.jpg --model-path models/exported/mobilenetv2_real_fake.keras
+```

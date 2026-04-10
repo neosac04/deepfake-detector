@@ -41,6 +41,7 @@ models/checkpoints/baseline.pt
 ```
 
 Notes:
+
 - If this file exists, predictions use your trained model.
 - If it is missing, the app still starts in demo mode (good for presentation flow), but predictions are not meaningful.
 
@@ -82,6 +83,38 @@ Expected response:
 {"status":"ok"}
 ```
 
+## 8) Train TensorFlow REAL/FAKE image model (optional)
+
+Expected dataset layout:
+
+```text
+dataset/
+  train/
+    real/
+    fake/
+  validation/
+    real/
+    fake/
+```
+
+Train and fine-tune MobileNetV2 model:
+
+```bash
+python scripts/train_image_tf.py --mode train --dataset-dir ~/Downloads/archive/dataset
+```
+
+This saves:
+
+- Model file at `models/exported/mobilenetv2_real_fake.keras`
+- Class index map at `models/exported/mobilenetv2_real_fake.classes.json`
+- Evaluation plots/reports under `models/exported/tf_eval/`
+
+Run inference on one image without retraining:
+
+```bash
+python scripts/train_image_tf.py --mode infer --image-path path/to/image.jpg --model-path models/exported/mobilenetv2_real_fake.keras
+```
+
 ## Common issues
 
 1. `No module named uvicorn`
@@ -92,7 +125,7 @@ Install dependencies again:
 pip install -r requirements.txt
 ```
 
-2. `address already in use` on port 8000
+1. `address already in use` on port 8000
 
 Either stop the process using port 8000 or run on another port:
 
@@ -100,8 +133,9 @@ Either stop the process using port 8000 or run on another port:
 PYTHONPATH=src python -m uvicorn deepfake_detector.api.app:app --host 127.0.0.1 --port 8001
 ```
 
-3. `Model is not loaded yet`
+1. `Model is not loaded yet`
 
 Make sure:
+
 - `configs/default.yaml` exists
 - Your checkpoint is at `models/checkpoints/baseline.pt` (if you want real predictions)
