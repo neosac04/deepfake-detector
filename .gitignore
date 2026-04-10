@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+
+# Logs and local outputs
+*.log
+tmp/
+
+# Model artifacts
+models/checkpoints/*.pt
+models/checkpoints/*.pth
+models/exported/*
+!models/exported/.gitkeep
+!models/checkpoints/.gitkeep
+
+# Data (keep folder structure only)
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep

@@ -1,0 +1,25 @@
+data:
+  sequence_length: 20
+  image_size: 112
+  face_padding: 20
+
+model:
+  name: resnext_lstm
+  num_classes: 2
+  hidden_dim: 512
+  dropout: 0.3
+  pretrained_backbone: false
+
+train:
+  batch_size: 2
+  epochs: 5
+  learning_rate: 0.0001
+  num_workers: 2
+  val_split: 0.2
+
+inference:
+  device: cpu
+
+labels:
+  0: FAKE
+  1: REAL
