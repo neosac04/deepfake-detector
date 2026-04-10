@@ -1,10 +1,23 @@
 from __future__ import annotations
 
+import json
 import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse
+
+try:
+    import numpy as np
+    from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+    from tensorflow.keras.models import load_model as tf_load_model
+    from tensorflow.keras.preprocessing.image import img_to_array, load_img
+except ImportError:  # pragma: no cover
+    np = None
+    preprocess_input = None
+    tf_load_model = None
+    img_to_array = None
+    load_img = None
 
 from deepfake_detector.config import load_config
 from deepfake_detector.models.resnext_lstm import ResNeXtLSTM
@@ -14,9 +27,14 @@ app = FastAPI(title="Deepfake Detector API")
 
 CFG_PATH = Path("configs/default.yaml")
 CHECKPOINT_PATH = Path("models/checkpoints/baseline.pt")
+TF_IMAGE_MODEL_PATH = Path("models/exported/mobilenetv2_real_fake.keras")
+TF_IMAGE_CLASSES_PATH = Path("models/exported/mobilenetv2_real_fake.classes.json")
 MODEL = None
 LABELS = {0: "FAKE", 1: "REAL"}
 MODEL_SOURCE = "unavailable"
+TF_IMAGE_MODEL = None
+TF_CLASS_INDICES = {"fake": 0, "real": 1}
+TF_IMAGE_MODEL_SOURCE = "unavailable"
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
 
 
@@ -27,6 +45,23 @@ def _build_model(cfg):
         dropout=cfg.model.dropout,
         pretrained_backbone=cfg.model.pretrained_backbone,
     )
+
+
+def _predict_image_tf(image_path: Path, image_size: int) -> tuple[int, float]:
+    if TF_IMAGE_MODEL is None:
+        raise ValueError("TensorFlow image model is not loaded.")
+
+    image = load_img(image_path, target_size=(image_size, image_size))
+    arr = img_to_array(image)
+    arr = np.expand_dims(arr, axis=0)
+    arr = preprocess_input(arr)
+
+    raw_score = float(TF_IMAGE_MODEL.predict(arr, verbose=0)[0][0])
+    real_idx = int(TF_CLASS_INDICES.get("real", 1))
+    prob_real = raw_score if real_idx == 1 else 1.0 - raw_score
+    pred_idx = 1 if prob_real >= 0.5 else 0
+    confidence = prob_real if pred_idx == 1 else 1.0 - prob_real
+    return pred_idx, confidence
 
 
 def _infer_media(tmp_path: Path, cfg):
@@ -51,7 +86,7 @@ def _infer_media(tmp_path: Path, cfg):
 
 @app.on_event("startup")
 def startup_event() -> None:
-    global MODEL, LABELS, MODEL_SOURCE
+    global MODEL, LABELS, MODEL_SOURCE, TF_IMAGE_MODEL, TF_CLASS_INDICES, TF_IMAGE_MODEL_SOURCE
     if not CFG_PATH.exists():
         return
     cfg = load_config(CFG_PATH)
@@ -66,11 +101,29 @@ def startup_event() -> None:
         MODEL = model
         MODEL_SOURCE = "demo"
 
+    if tf_load_model is not None and TF_IMAGE_MODEL_PATH.exists():
+        TF_IMAGE_MODEL = tf_load_model(TF_IMAGE_MODEL_PATH)
+        TF_IMAGE_MODEL_SOURCE = "checkpoint"
+        if TF_IMAGE_CLASSES_PATH.exists():
+            try:
+                loaded = json.loads(TF_IMAGE_CLASSES_PATH.read_text(encoding="utf-8"))
+                TF_CLASS_INDICES = {str(k).lower(): int(v) for k, v in loaded.items()}
+            except Exception:
+                TF_CLASS_INDICES = {"fake": 0, "real": 1}
+    else:
+        TF_IMAGE_MODEL = None
+        TF_IMAGE_MODEL_SOURCE = "unavailable"
+
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
-    status_text = (
-        "Loaded checkpoint" if MODEL_SOURCE == "checkpoint" else "Demo mode: using the configured model without a saved checkpoint"
+    video_status_text = (
+        "Loaded checkpoint" if MODEL_SOURCE == "checkpoint" else "Demo mode: using the configured video model without a saved checkpoint"
+    )
+    image_status_text = (
+        "Loaded TensorFlow image checkpoint"
+        if TF_IMAGE_MODEL_SOURCE == "checkpoint"
+        else "TensorFlow image model not loaded (using PyTorch fallback for images)"
     )
     return f"""<!doctype html>
 <html lang="en">
@@ -210,7 +263,7 @@ def index() -> str:
                 <div class="stat"><strong>Pipeline</strong><span>Frame sampling, face crop, classification</span></div>
                 <div class="stat"><strong>Output</strong><span>FAKE or REAL with confidence</span></div>
             </div>
-            <div class="status">Model status: {status_text}</div>
+            <div class="status">Video model: {video_status_text}<br/>Image model: {image_status_text}</div>
         </section>
 
         <section class="card">
@@ -327,13 +380,19 @@ async def predict(file: UploadFile = File(...)) -> dict:
     try:
         is_image = suffix.lower() in IMAGE_EXTENSIONS or (file.content_type or "").startswith("image/")
         if is_image:
-            pred_idx, confidence = predict_image(
-                model=MODEL,
-                image_path=tmp_path,
-                sequence_length=cfg.data.sequence_length,
-                image_size=cfg.data.image_size,
-                device=cfg.inference.device,
-            )
+            if TF_IMAGE_MODEL is not None and preprocess_input is not None and img_to_array is not None and load_img is not None and np is not None:
+                pred_idx, confidence = _predict_image_tf(
+                    image_path=tmp_path,
+                    image_size=cfg.data.image_size,
+                )
+            else:
+                pred_idx, confidence = predict_image(
+                    model=MODEL,
+                    image_path=tmp_path,
+                    sequence_length=cfg.data.sequence_length,
+                    image_size=cfg.data.image_size,
+                    device=cfg.inference.device,
+                )
         else:
             pred_idx, confidence = predict_video(
                 model=MODEL,
