@@ -1,0 +1,7 @@
+{
+  "accuracy": 0.0,
+  "auc_roc": 0.0,
+  "best_threshold": 0.46,
+  "test_samples": 0,
+  "note": "Metrics pending - model validation in progress"
+}
