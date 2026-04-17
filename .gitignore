@@ -22,11 +22,10 @@ env/
 tmp/
 
 # Model artifacts
-models/checkpoints/*.pt
-models/checkpoints/*.pth
-models/exported/*
-!models/exported/.gitkeep
-!models/checkpoints/.gitkeep
+models/mobilenetv2/*
+!models/mobilenetv2/.gitkeep
+models/efficientnetb0/*
+!models/efficientnetb0/.gitkeep
 
 # Data (keep folder structure only)
 data/raw/*

@@ -9,14 +9,14 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-from deepfake_detector.config import load_config
-from deepfake_detector.data.dataset import VideoSequenceDataset
-from deepfake_detector.models.resnext_lstm import ResNeXtLSTM
-from deepfake_detector.models.efficientnet_gru import EfficientNetGRU
-from deepfake_detector.pipelines.train_pipeline import run_training
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from backend.config import load_config
+from backend.utilities.data.dataset import VideoSequenceDataset
+from backend.models.resnext_lstm import ResNeXtLSTM
+from backend.models.efficientnet_gru import EfficientNetGRU
+from backend.utilities.pipelines.train_pipeline import run_training
 
 
 def build_model(cfg):

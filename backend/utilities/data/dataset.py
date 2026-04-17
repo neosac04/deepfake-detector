@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from deepfake_detector.data.video import extract_frames, detect_and_crop_faces
+from backend.utilities.data.video import extract_frames, detect_and_crop_faces
 
 
 class VideoSequenceDataset(Dataset):

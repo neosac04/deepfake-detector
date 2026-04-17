@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepGuard — AI Deepfake Detector</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1>DeepGuard</h1>
+                <p class="header-tagline">Detect AI-generated or manipulated faces with confidence</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- STEPPER -->
+    <div class="stepper">
+        <div class="stepper-container">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Upload</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Analysis</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Prediction</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Explanation</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="container">
+        <!-- UPLOAD PANEL -->
+        <section id="uploadPanel" class="panel upload-panel active">
+            <h2>Step 1: Upload Image</h2>
+            
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </div>
+                <p class="upload-text">Drag & drop an image or click to browse</p>
+                <button class="upload-button" id="uploadButton">Select Image</button>
+                <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" hidden>
+            </div>
+
+            <div id="previewContainer" class="preview-container" style="display: none;">
+                <div class="preview-info">
+                    <img id="previewImage" class="preview-image" alt="Preview">
+                    <div class="preview-details">
+                        <p class="preview-filename" id="previewFilename"></p>
+                        <p class="preview-size" id="previewSize"></p>
+                        <button class="button-link" id="changeImageBtn">Change Image</button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="analyzeBtn" class="button button-primary" disabled>Analyze Image</button>
+        </section>
+
+        <!-- ANALYSIS PANEL -->
+        <section id="analysisPanel" class="panel analysis-panel" style="display: none;">
+            <h2>Step 2: Analyzing Image</h2>
+            
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <p class="loading-text">Analyzing image for deepfake indicators...</p>
+                <p class="loading-subtext">This typically takes 2–3 seconds</p>
+            </div>
+        </section>
+
+        <!-- PREDICTION & EXPLANATION PANELS -->
+        <div id="resultsContainer" class="results-container" style="display: none;">
+            <!-- PREDICTION PANEL -->
+            <section id="predictionPanel" class="panel prediction-panel">
+                <h2>Step 3: Prediction Results</h2>
+                
+                <div class="result-badge" id="resultBadge">
+                    <!-- REAL or DEEPFAKE DETECTED -->
+                </div>
+
+                <div class="confidence-section">
+                    <p class="confidence-label">Confidence Score</p>
+                    <p class="confidence-percentage" id="confidencePercentage">94.3%</p>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceFill" style="width: 94.3%"></div>
+                    </div>
+                </div>
+
+                <div class="model-info">
+                    <p>Model: <strong>MobileNetV2</strong></p>
+                </div>
+            </section>
+
+            <!-- EXPLANATION PANEL -->
+            <section id="explanationPanel" class="panel explanation-panel">
+                <h2>Step 4: Why This Prediction?</h2>
+                
+                <div class="explanation-reasons">
+                    <div class="reason-item">
+                        <div class="reason-bar" style="background: #FF6B6B;"></div>
+                        <p>Inconsistent facial blending around the jawline</p>
+                    </div>
+                    <div class="reason-item">
+                        <div class="reason-bar" style="background: #FF8C42;"></div>
+                        <p>Unnatural eye reflection patterns detected</p>
+                    </div>
+                    <div class="reason-item">
+                        <div class="reason-bar" style="background: #FFD93D;"></div>
+                        <p>GAN compression artifacts found in high-frequency regions</p>
+                    </div>
+                    <div class="reason-item">
+                        <div class="reason-bar" style="background: #6BCB77;"></div>
+                        <p>Skin texture inconsistency in cheek area</p>
+                    </div>
+                    <div class="reason-item">
+                        <div class="reason-bar" style="background: #4D96FF;"></div>
+                        <p>Asymmetric facial feature distribution</p>
+                    </div>
+                </div>
+
+                <div class="confidence-breakdown">
+                    <h3>Confidence Breakdown</h3>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <p class="metric-label">Face Authenticity</p>
+                            <p class="metric-value" id="metricAuthenticity">87%</p>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="metricAuthenticityFill" style="width: 87%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <p class="metric-label">Texture Analysis</p>
+                            <p class="metric-value" id="metricTexture">92%</p>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="metricTextureFill" style="width: 92%;"></div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <p class="metric-label">Artifact Score</p>
+                            <p class="metric-value" id="metricArtifact">89%</p>
+                            <div class="metric-bar">
+                                <div class="metric-fill" id="metricArtifactFill" style="width: 89%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <section id="actionsPanel" class="panel actions-panel" style="display: none;">
+            <div class="actions-buttons">
+                <button id="analyzeAnotherBtn" class="button button-secondary">Analyze Another Image</button>
+                <button id="downloadReportBtn" class="button button-primary">Download Report</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>DeepGuard © 2025. For research purposes only. Always verify critical decisions independently.</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

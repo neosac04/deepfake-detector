@@ -19,17 +19,21 @@ except ImportError:  # pragma: no cover
     img_to_array = None
     load_img = None
 
-from deepfake_detector.config import load_config
-from deepfake_detector.models.resnext_lstm import ResNeXtLSTM
-from deepfake_detector.pipelines.inference_pipeline import load_checkpoint, predict_image, predict_video
+from backend.config import load_config
+from backend.models.resnext_lstm import ResNeXtLSTM
+from backend.utilities.pipelines.inference_pipeline import (
+    load_checkpoint,
+    predict_image,
+    predict_video,
+)
 
 app = FastAPI(title="Deepfake Detector API")
 
-CFG_PATH = Path("configs/default.yaml")
-CHECKPOINT_PATH = Path("models/checkpoints/baseline.pt")
-TF_IMAGE_MODEL_PATH = Path("models/exported/mobilenetv2_real_fake.keras")
-TF_IMAGE_CLASSES_PATH = Path("models/exported/mobilenetv2_real_fake.classes.json")
-TF_IMAGE_THRESHOLD_PATH = Path("models/exported/mobilenetv2_real_fake.threshold.json")
+CFG_PATH = Path("backend/config/default.yaml")
+CHECKPOINT_PATH = Path("models/mobilenetv2/baseline.pt")
+TF_IMAGE_MODEL_PATH = Path("models/mobilenetv2/mobilenetv2.h5")
+TF_IMAGE_CLASSES_PATH = Path("models/mobilenetv2/mobilenetv2.classes.json")
+TF_IMAGE_THRESHOLD_PATH = Path("models/mobilenetv2/mobilenetv2.threshold.json")
 MODEL = None
 LABELS = {0: "FAKE", 1: "REAL"}
 MODEL_SOURCE = "unavailable"

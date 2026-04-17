@@ -586,12 +586,12 @@ def parse_args():
     )
     parser.add_argument(
         "--model-path",
-        default="models/exported/mobilenetv2_real_fake.keras",
+        default="models/mobilenetv2/mobilenetv2.h5",
         help="Path to save/load model file (.keras or .h5).",
     )
     parser.add_argument(
         "--output-dir",
-        default="models/exported/tf_eval",
+        default="models/mobilenetv2/tf_eval",
         help="Directory to save plots and reports.",
     )
     parser.add_argument("--image-path", default=None, help="Image path for --mode infer.")

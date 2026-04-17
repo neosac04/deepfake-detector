@@ -6,7 +6,7 @@ import cv2
 import torch
 from torchvision import transforms
 
-from deepfake_detector.data.video import extract_frames, detect_and_crop_faces
+from backend.utilities.data.video import extract_frames, detect_and_crop_faces
 
 
 _TRANSFORM_CACHE = {}
